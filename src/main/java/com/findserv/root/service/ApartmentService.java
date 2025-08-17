@@ -1,10 +1,10 @@
 package com.findserv.root.service;
 
 import com.findserv.root.DTO.ApartmentDto;
+import com.findserv.root.DTO.CommunityDto;
 import com.findserv.root.entity.Apartment;
 import com.findserv.root.entity.Community;
 import com.findserv.root.repos.ApartmentRepository;
-import com.findserv.root.repos.CommunityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
-    private final CommunityRepository communityRepository;
+    private final CommunityService communityService;
 
     public List<ApartmentDto> getAllApartments() {
         return apartmentRepository.findAll()
@@ -39,24 +39,8 @@ public class ApartmentService {
     }
 
     public ApartmentDto createApartment(ApartmentDto dto) {
-        Community community = communityRepository.findById(dto.getCommunityId())
-                .orElseThrow(() -> new RuntimeException("Community not found"));
-
-        Apartment apartment = Apartment.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .price(dto.getPrice())
-                .bedrooms(dto.getBedrooms())
-                .bathrooms(dto.getBathrooms())
-                .sqft(dto.getSqft())
-                .available(dto.isAvailable())
-                .latitude(dto.getLatitude())
-                .longitude(dto.getLongitude())
-                .address(dto.getAddress())
-                .community(community)
-                .build();
-
-        return ApartmentDto.fromEntity(apartmentRepository.save(apartment));
+        Community community = getOrCreateCommunity(dto);
+        return saveApartment(dto, community);
     }
 
     public ApartmentDto updateApartment(Long id, ApartmentDto dto) {
@@ -74,9 +58,8 @@ public class ApartmentService {
         apartment.setLongitude(dto.getLongitude());
         apartment.setAddress(dto.getAddress());
 
-        if (dto.getCommunityId() != null) {
-            Community community = communityRepository.findById(dto.getCommunityId())
-                    .orElseThrow(() -> new RuntimeException("Community not found"));
+        if (dto.getCommunityId() != null || dto.getCommunityName() != null) {
+            Community community = getOrCreateCommunity(dto);
             apartment.setCommunity(community);
         }
 
@@ -86,5 +69,62 @@ public class ApartmentService {
     public void deleteApartment(Long id) {
         apartmentRepository.deleteById(id);
     }
-}
 
+    // ----------------- Batch Inserts -----------------
+
+    public List<ApartmentDto> createApartmentsBatchWithCommunityCreation(List<ApartmentDto> apartmentDtos) {
+        return apartmentDtos.stream()
+                .map(dto -> saveApartment(dto, getOrCreateCommunity(dto)))
+                .collect(Collectors.toList());
+    }
+
+    public List<ApartmentDto> createApartmentsBatch(Long communityId, List<ApartmentDto> apartmentDtos) {
+        Community community = communityService.getCommunityEntityById(communityId);
+        return apartmentDtos.stream()
+                .map(dto -> saveApartment(dto, community))
+                .collect(Collectors.toList());
+    }
+
+    // ----------------- Private Helpers -----------------
+
+    private ApartmentDto saveApartment(ApartmentDto dto, Community community) {
+        Apartment apartment = Apartment.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .price(dto.getPrice())
+                .bedrooms(dto.getBedrooms())
+                .bathrooms(dto.getBathrooms())
+                .sqft(dto.getSqft())
+                .available(dto.isAvailable())
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
+                .address(dto.getAddress())
+                .community(community)
+                .build();
+        return ApartmentDto.fromEntity(apartmentRepository.save(apartment));
+    }
+
+    private Community getOrCreateCommunity(ApartmentDto dto) {
+        Community community = null;
+
+        if (dto.getCommunityId() != null) {
+            try {
+                community = communityService.getCommunityEntityById(dto.getCommunityId());
+            } catch (RuntimeException e) {
+                // not found, will create
+            }
+        }
+
+        if (community == null && dto.getCommunityName() != null) {
+            community = communityService.getOrCreateCommunityByName(dto.getCommunityName());
+        }
+
+        if (community == null) {
+            CommunityDto newCommunityDto = new CommunityDto();
+            newCommunityDto.setName(dto.getCommunityName() != null ? dto.getCommunityName() : "Community_" + System.currentTimeMillis());
+            community = communityService.createCommunity(newCommunityDto).toEntity();
+        }
+
+        return community;
+    }
+}
