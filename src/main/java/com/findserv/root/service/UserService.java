@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,6 +65,14 @@ public class UserService {
         return UserDto.fromEntity(userRepository.save(user));
     }
 
+
+    public List<UserDto> getUsersByRole(String roleName) {
+        Role role = Role.valueOf(roleName.toUpperCase());
+        List<User> users = userRepository.findByRolesIn(Collections.singleton(role));
+        return users.stream()
+                .map(UserDto::fromEntity)
+                .collect(Collectors.toList());
+    }
 
 
     public void deleteUser(Long id) {

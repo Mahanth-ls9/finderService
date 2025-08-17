@@ -37,7 +37,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/api/communities/**",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "/api/apartments/**"
                         ).permitAll()
 
                         // Public endpoints

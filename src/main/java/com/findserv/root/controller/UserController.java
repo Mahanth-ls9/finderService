@@ -48,6 +48,11 @@ public class UserController {
 
         return ResponseEntity.ok(createdUsers);
     }
+    @GetMapping("/user-roles")
+    public ResponseEntity<List<UserDto>> getUserRoles(@RequestParam String role) {
+        List<UserDto> usersWithRole = userService.getUsersByRole(role);
+        return ResponseEntity.ok(usersWithRole);
+    }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {

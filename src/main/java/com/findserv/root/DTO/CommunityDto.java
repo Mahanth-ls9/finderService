@@ -16,6 +16,9 @@ public class CommunityDto {
     private String city;
     private String state;
 
+    public CommunityDto(String name, Object name1, Object location, Object city, Object state) {
+    }
+
     public static CommunityDto fromEntity(Community community) {
         return CommunityDto.builder()
                 .id(community.getId())

@@ -52,4 +52,16 @@ public class CommunityService {
     public void deleteCommunity(Long id) {
         communityRepository.deleteById(id);
     }
+
+    // ----------------- Helper Methods -----------------
+
+    public Community getCommunityEntityById(Long id) {
+        return communityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Community not found: ID " + id));
+    }
+
+    public Community getOrCreateCommunityByName(String name) {
+        return communityRepository.findByName(name)
+                .orElseGet(() -> createCommunity(new CommunityDto(name, null, null, null,null)).toEntity());
+    }
 }
