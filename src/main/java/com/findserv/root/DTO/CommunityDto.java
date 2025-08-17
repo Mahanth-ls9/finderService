@@ -12,6 +12,7 @@ public class CommunityDto {
 
     private Long id;
     private String name;
+    private String location;
     private String city;
     private String state;
 
@@ -19,6 +20,7 @@ public class CommunityDto {
         return CommunityDto.builder()
                 .id(community.getId())
                 .name(community.getName())
+                .location(community.getLocation())
                 .city(community.getCity())
                 .state(community.getState())
                 .build();
@@ -29,6 +31,7 @@ public class CommunityDto {
                 .id(this.id)
                 .name(this.name)
                 .city(this.city)
+                .location(this.location)
                 .state(this.state)
                 .build();
     }

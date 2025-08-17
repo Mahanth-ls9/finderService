@@ -19,6 +19,7 @@ public class Community {
     private Long id;
 
     private String name;
+    private String location;
     private String city;
     private String state;
 
