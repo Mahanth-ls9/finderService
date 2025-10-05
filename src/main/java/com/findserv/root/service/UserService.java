@@ -3,7 +3,6 @@ package com.findserv.root.service;
 import com.findserv.root.DTO.AdminCreateUserDto;
 import com.findserv.root.DTO.UserDto;
 import com.findserv.root.DTO.UserRegistrationDto;
-import com.findserv.root.config.SecurityConfig;
 import com.findserv.root.entity.Role;
 import com.findserv.root.entity.User;
 import com.findserv.root.repos.UserRepository;
@@ -17,17 +16,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-
 public class UserService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -42,10 +40,16 @@ public class UserService {
     }
 
     public UserDto registerUser(UserRegistrationDto dto) {
+        // optional: check if username/email already exists and throw a clear exception
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+
         User user = User.builder()
                 .username(dto.getUsername())
                 .email(dto.getEmail())
-                .password(dto.getPassword()) // ⚠️ later hash with BCrypt
+                // ENCODE password before saving
+                .password(passwordEncoder.encode(dto.getPassword()))
                 .roles(Set.of(Role.USER))
                 .build();
 
@@ -65,7 +69,6 @@ public class UserService {
         return UserDto.fromEntity(userRepository.save(user));
     }
 
-
     public List<UserDto> getUsersByRole(String roleName) {
         Role role = Role.valueOf(roleName.toUpperCase());
         List<User> users = userRepository.findByRolesIn(Collections.singleton(role));
@@ -73,7 +76,6 @@ public class UserService {
                 .map(UserDto::fromEntity)
                 .collect(Collectors.toList());
     }
-
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
