@@ -7,8 +7,6 @@ Java 17+
 
 Maven 3.8+
 
-Node.js 18+ and npm/yarn
-
 Optional: Postman for testing APIs
 
 Optional: H2 Database console available at http://localhost:8080/h2-console
