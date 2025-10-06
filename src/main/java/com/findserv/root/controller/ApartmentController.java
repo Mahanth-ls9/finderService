@@ -4,6 +4,7 @@ import com.findserv.root.DTO.ApartmentDto;
 import com.findserv.root.service.ApartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,29 +32,34 @@ public class ApartmentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApartmentDto> create(@RequestBody ApartmentDto dto) {
         return ResponseEntity.ok(apartmentService.createApartment(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApartmentDto> update(@PathVariable Long id, @RequestBody ApartmentDto dto) {
         return ResponseEntity.ok(apartmentService.updateApartment(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         apartmentService.deleteApartment(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Batch insert for apartments with auto community creation
+    // Batch insert for apartments with auto community creation (admin-only)
     @PostMapping("/batch/create-with-community")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ApartmentDto>> createBatchWithCommunity(@RequestBody List<ApartmentDto> dtos) {
         return ResponseEntity.ok(apartmentService.createApartmentsBatchWithCommunityCreation(dtos));
     }
 
-    // Batch insert for a single existing community
+    // Batch insert for a single existing community (admin-only)
     @PostMapping("/batch/{communityId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ApartmentDto>> createBatchSingleCommunity(
             @PathVariable Long communityId,
             @RequestBody List<ApartmentDto> dtos) {
