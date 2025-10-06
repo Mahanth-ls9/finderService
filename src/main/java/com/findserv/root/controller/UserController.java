@@ -6,6 +6,7 @@ import com.findserv.root.DTO.UserRegistrationDto;
 import com.findserv.root.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,11 +35,13 @@ public class UserController {
     }
 
     @PostMapping("/adminregistration")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto createUserByAdmin(@RequestBody AdminCreateUserDto dto) {
         return userService.createUserByAdmin(dto);
     }
 
     @PostMapping("/admin-reg/batch")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> createUsersBatch(
             @RequestBody List<AdminCreateUserDto> dtos) {
 
@@ -48,6 +51,7 @@ public class UserController {
 
         return ResponseEntity.ok(createdUsers);
     }
+
     @GetMapping("/user-roles")
     public ResponseEntity<List<UserDto>> getUserRoles(@RequestParam String role) {
         List<UserDto> usersWithRole = userService.getUsersByRole(role);
@@ -55,8 +59,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }
 }
-
