@@ -1,6 +1,7 @@
 package com.findserv.root.controller;
 
 import com.findserv.root.DTO.AdminCreateUserDto;
+import com.findserv.root.DTO.ResetPasswordDto;
 import com.findserv.root.DTO.UserDto;
 import com.findserv.root.DTO.UserRegistrationDto;
 import com.findserv.root.service.UserService;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,6 +52,13 @@ public class UserController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(createdUsers);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')") // ensure only admins can call
+    public ResponseEntity<?> resetPasswordByAdmin(@PathVariable Long id, @RequestBody ResetPasswordDto dto) {
+        userService.resetPasswordByAdmin(id, dto);
+        return ResponseEntity.ok(Map.of("message", "Password reset"));
     }
 
     @GetMapping("/user-roles")
